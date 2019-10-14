@@ -1,0 +1,6 @@
+[submodule "aws"]
+	path = aws
+	url = https://github.com/brikis98/terraform-up-and-running-code.git
+[submodule "gcloud"]
+	path = gcloud
+	url = https://github.com/mjuenema/Terraform-Up-and-Running-Code-Samples-Translated.git
