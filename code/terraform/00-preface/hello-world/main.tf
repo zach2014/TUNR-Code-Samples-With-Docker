@@ -2,6 +2,9 @@ terraform {
     required_version = ">=0.12, < 0.13"
 }
 
+provider "null" {
+    version = "2.1.2"
+}
 
 variable "ssh_user" {
     type = string
@@ -27,13 +30,21 @@ resource "null_resource" "target_host" {
     }
 
     provisioner "file" {
+        source = "setup/daemon.json"
+        destination = "/tmp/daemon.json"
+    }
+
+    provisioner "file" {
         source = "setup/get-docker.sh"
         destination = "/tmp/get-docker.sh"
     }
+
     provisioner "remote-exec" {
         inline = [
+            "sudo mv -f /tmp/daemon.json /etc/docker/daemon.json",
             "chmod a+x /tmp/get-docker.sh",
-            "sh /tmp/get-docker.sh"
+            "sh /tmp/get-docker.sh",
+            "sudo usermod -aG docker ${var.ssh_user}",
         ]
     }
 
@@ -41,8 +52,10 @@ resource "null_resource" "target_host" {
 	when  = "destroy"
         inline = [
             "rm -rf /tmp/get-docker.sh",
-            "sudo -E sh -c apt-get remove -y -qq docker-ce-cli",
-            "sudo -E sh -c apt-get remove -y -qq docker-ce",
+            "sudo apt-get remove -y -qq docker-ce-cli",
+            "sudo apt-get remove -y -qq docker-ce",
+            "sudo rm -f /etc/docker/daemon.json",
+            "sudo gpasswd -d ${var.ssh_user} docker"
         ]
     }
 } 
