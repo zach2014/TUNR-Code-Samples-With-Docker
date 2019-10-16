@@ -55,8 +55,24 @@ resource "null_resource" "target_host" {
             "rm -rf /tmp/get-docker.sh",
             "sudo apt-get remove -y -qq docker-ce-cli",
             "sudo apt-get remove -y -qq docker-ce",
-            "sudo rm -f /etc/systemd/system/docker.service.d",
+            "sudo rm -rf /etc/systemd/system/docker.service.d",
             "sudo gpasswd -d ${var.ssh_user} docker"
         ]
     }
-} 
+}
+
+provider "docker" {
+    version = "2.5.0"
+    host = "tcp://${var.ssh_target_host}:2376"
+}
+
+resource "docker_container" "hello-world" {
+    image = "${docker_image.hello-world.latest}"
+    name = "hello-world-with-terraform"
+    must_run = "false"
+    restart = "on-failure"
+}
+
+resource "docker_image" "hello-world" {
+    name = "hello-world:latest"
+}
