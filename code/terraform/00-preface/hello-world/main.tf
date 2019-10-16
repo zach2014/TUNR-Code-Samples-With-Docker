@@ -26,16 +26,23 @@ resource "null_resource" "target_host" {
     host = var.ssh_target_host
     }
 
+    provisioner "file" {
+        source = "setup/get-docker.sh"
+        destination = "/tmp/get-docker.sh"
+    }
     provisioner "remote-exec" {
-        inline = [ 
-        "touch /tmp/terraform-bootstrap-provision.txt"   
+        inline = [
+            "chmod a+x /tmp/get-docker.sh",
+            "sh /tmp/get-docker.sh"
         ]
     }
 
     provisioner "remote-exec" {
 	when  = "destroy"
-        inline = [ 
-        "rm -rf /tmp/terraform-bootstrap-provision.txt"   
+        inline = [
+            "rm -rf /tmp/get-docker.sh",
+            "sudo -E sh -c apt-get remove -y -qq docker-ce-cli",
+            "sudo -E sh -c apt-get remove -y -qq docker-ce",
         ]
     }
 } 
