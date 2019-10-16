@@ -30,8 +30,8 @@ resource "null_resource" "target_host" {
     }
 
     provisioner "file" {
-        source = "setup/daemon.json"
-        destination = "/tmp/daemon.json"
+        source = "setup/docker-override.conf"
+        destination = "/tmp/docker-override.conf"
     }
 
     provisioner "file" {
@@ -41,7 +41,8 @@ resource "null_resource" "target_host" {
 
     provisioner "remote-exec" {
         inline = [
-            "sudo mv -f /tmp/daemon.json /etc/docker/daemon.json",
+            "sudo mkdir -p /etc/systemd/system/docker.service.d",
+            "sudo mv -f /tmp/docker-override.conf /etc/systemd/system/docker.service.d/override.conf",
             "chmod a+x /tmp/get-docker.sh",
             "sh /tmp/get-docker.sh",
             "sudo usermod -aG docker ${var.ssh_user}",
@@ -54,7 +55,7 @@ resource "null_resource" "target_host" {
             "rm -rf /tmp/get-docker.sh",
             "sudo apt-get remove -y -qq docker-ce-cli",
             "sudo apt-get remove -y -qq docker-ce",
-            "sudo rm -f /etc/docker/daemon.json",
+            "sudo rm -f /etc/systemd/system/docker.service.d",
             "sudo gpasswd -d ${var.ssh_user} docker"
         ]
     }
