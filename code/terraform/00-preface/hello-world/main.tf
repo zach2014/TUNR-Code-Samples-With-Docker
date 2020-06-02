@@ -43,18 +43,21 @@ resource "null_resource" "target_host" {
         inline = [
             "sudo mkdir -p /etc/systemd/system/docker.service.d",
             "sudo mv -f /tmp/docker-override.conf /etc/systemd/system/docker.service.d/override.conf",
-            "chmod a+x /tmp/get-docker.sh",
+            "sudo chmod a+x /tmp/get-docker.sh",
             "sh /tmp/get-docker.sh",
             "sudo usermod -aG docker ${var.ssh_user}",
+            "sudo systemctl daemon-reload",
+            "sudo systemctl restart docker.service"
         ]
     }
 
     provisioner "remote-exec" {
-	when  = "destroy"
+	when  = destroy
         inline = [
             "rm -rf /tmp/get-docker.sh",
-            "sudo apt-get remove -y -qq docker-ce-cli",
-            "sudo apt-get remove -y -qq docker-ce",
+            "sudo systemctl stop docker.service",
+            "sudo apt-get remove -y -qq docker-ce-cli 2> /dev/null",
+            "sudo apt-get remove -y -qq docker-ce 2> /dev/null",
             "sudo rm -rf /etc/systemd/system/docker.service.d",
             "sudo gpasswd -d ${var.ssh_user} docker"
         ]
