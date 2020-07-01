@@ -2,6 +2,7 @@
 **/.terraform/*
 
 # .plan files
+*plan
 *.plan
 
 # .tfstate files
